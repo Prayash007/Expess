@@ -1,36 +1,25 @@
-const express = require("express");
 const axios = require("axios");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+module.exports = async function (req, res) {
+    const { imageUrl } = req.payload; // Retrieve imageUrl from the request payload
 
-app.post("/predict", async (req, res) => {
-  const { imageUrl } = req.body;
+    try {
+        const response = await axios.post(
+            "https://detect.roboflow.com/drug_detection_project/9",
+            {
+                api_key: "Ajvqkk4nNlEiT1PUvWWD",
+                image: imageUrl,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-  try {
-    const response = await axios.post(
-      "https://detect.roboflow.com/drug_detection_project/9",
-      {
-        api_key: "Ajvqkk4nNlEiT1PUvWWD",
-        image: imageUrl,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    res.json({ prediction: response.data});
-  } catch (error) {
-    console.error("Error making prediction:", error);
-    res.status(500).send("Error making prediction");
-  }
-});
-
-app.listen(3001, () => {
-  console.log("Server is running on http://localhost:3001");
-});
+        res.json({ prediction: response.data });
+    } catch (error) {
+        console.error("Error in Roboflow request:", error);
+        res.status(500).json({ error: "Error making prediction" });
+    }
+};
